@@ -27,7 +27,9 @@ const register = async (req, res) => {
       password: hashedPassword,
     };
     data.setUsers([...data.users, newUser]);
-    await fsPromises.writeFile(path.join(__dirname, '..', 'models', 'users.json'), JSON.stringify(data.users))
+    await fsPromises.writeFile(
+        path.join(__dirname, '..', 'models', 'users.json'),
+        JSON.stringify(data.users));
     console.log(data.users);
     return res.status(201).json({'Message': 'Successfully registered'});
   } catch (error) {
@@ -36,4 +38,25 @@ const register = async (req, res) => {
   }
 };
 
-module.exports = {register};
+const login = async (req, res) => {
+  if (!req.body.username || !req.body.password) {
+    return res.status(400).
+        json({'Message': 'Username and Password are both required'});
+  }
+
+  const user = data.users.find(user => user.username === req.body.username);
+  if (user) {
+    const match = await bcrypt.compare(req.body.password, user.password);
+    if (match) {
+      //TODO Create JWT
+      return res.status(200).json({'Message': 'Successfully logged in'});
+    } else {
+      return res.status(401).json({'Message': 'Invalid username or password'});
+    }
+  } else {
+    return res.status(401).json({'Message': 'Invalid username or password'});
+  }
+
+};
+
+module.exports = {register, login};
