@@ -1,2 +1,3 @@
-const employeesRoute = require('./employeesRoute');
-module.exports = {employeesRoute};
+const employeeRoutes = require('./employee.routes');
+const authRoutes = require('./auth.routes');
+module.exports = {employeeRoutes, authRoutes};

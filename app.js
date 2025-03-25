@@ -4,7 +4,7 @@ const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 
 const routes = require('./routes/index');
-const requestLogger = require('./middleware/requestLogger');
+const requestLogger = require('./config/logger');
 
 const app = express();
 
@@ -20,6 +20,7 @@ app.use(express.urlencoded({extended: false}));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/employees', routes.employeesRoute);
+app.use('/employees', routes.employeeRoutes);
+app.use('/auth', routes.authRoutes);
 
 module.exports = app;

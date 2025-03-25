@@ -17,7 +17,7 @@ const createEmployee = (req, res) => {
   const newEmployee = {
     id: data.employees[data.employees.length - 1].id + 1 || 1,
     name: req.body.name,
-    employeename: req.body?.employeename,
+    username: req.body?.employeename,
     email: req.body.email,
     address: req.body?.address,
     phone: req.body?.phone,
