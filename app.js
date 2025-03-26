@@ -6,6 +6,7 @@ require('dotenv').config();
 
 const routes = require('./routes/index');
 const requestLogger = require('./config/logger');
+const verifyJWT = require('./middlewares/auth.middleware');
 
 const app = express();
 
@@ -21,7 +22,10 @@ app.use(express.urlencoded({extended: false}));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/employees', routes.employeeRoutes);
 app.use('/auth', routes.authRoutes);
+
+//Authenticated routes
+app.use(verifyJWT)
+app.use('/employees', routes.employeeRoutes);
 
 module.exports = app;

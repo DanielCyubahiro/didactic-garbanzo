@@ -9,9 +9,6 @@ const {
 } = require('../controllers/employees.controller');
 
 router.route('/').get(getEmployees).post(createEmployee);
-router.route('/:id').
-    get(getEmployeeById).
-    put(updateEmployee).
-    delete(deleteEmployee);
+router.route('/:id').get(getEmployeeById).put(updateEmployee).delete(deleteEmployee);
 
 module.exports = router;
