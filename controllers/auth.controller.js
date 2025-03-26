@@ -5,7 +5,7 @@ const data = {
 
 const fsPromises = require('fs').promises;
 const path = require('path');
-const bcrypt = require('bcrypt');
+const {hashPassword, comparePassword} = require('../services/auth.services');
 
 const register = async (req, res) => {
   if (!req.body.username || !req.body.password) {
@@ -21,7 +21,7 @@ const register = async (req, res) => {
 
   //Create new user
   try {
-    const hashedPassword = await bcrypt.hash(req.body.password, 10);
+    const hashedPassword = hashPassword(req.body.password);
     const newUser = {
       username: req.body.username,
       password: hashedPassword,
@@ -46,7 +46,7 @@ const login = async (req, res) => {
 
   const user = data.users.find(user => user.username === req.body.username);
   if (user) {
-    const match = await bcrypt.compare(req.body.password, user.password);
+    const match = comparePassword(req.body.password, user.password);
     if (match) {
       //TODO Create JWT
       return res.status(200).json({'Message': 'Successfully logged in'});
