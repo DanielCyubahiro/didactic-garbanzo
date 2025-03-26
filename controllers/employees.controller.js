@@ -58,7 +58,7 @@ const deleteEmployee = (req, res) => {
 
   //Delete employee
   data.setEmployees(data.employees.filter(employee => employee.id !== employee.id));
-  return res.status(204).json(data.employees);
+  return res.sendStatus(204);
 };
 
 const getEmployeeById = (req, res) => {
