@@ -1,10 +1,3 @@
-const data = {
-  users: require('../model/users.json'),
-  setUsers: function(data) {this.users = data;},
-};
-
-const fsPromises = require('fs').promises;
-const path = require('path');
 const {
   hashPassword,
   comparePassword,
@@ -13,6 +6,7 @@ const {
 } = require('../services/auth.services');
 const jwt = require('jsonwebtoken');
 const ROLES = require('../config/roles');
+const User = require('../model/user.model');
 
 const register = async (req, res) => {
   const {username, password, roles} = req.body;
@@ -22,7 +16,7 @@ const register = async (req, res) => {
   }
 
   //Check if user is already registered
-  const user = data.users.find(user => user.username === username);
+  const user = await User.findOne({username: username}).exec();
   if (user) {
     return res.status(409).json({'Message': 'Username already registered'});
   }
@@ -30,17 +24,14 @@ const register = async (req, res) => {
   //Create new user
   try {
     const hashedPassword = await hashPassword(password);
-    const newUser = {
+    const result = await User.insertOne({
       id: Date.now().toString(),
       username: username,
       password: hashedPassword,
       roles: {...roles, 'User': ROLES.User},
-    };
-    data.setUsers([...data.users, newUser]);
-    await fsPromises.writeFile(
-        path.join(__dirname, '..', 'model', 'users.json'),
-        JSON.stringify(data.users));
-    return res.status(201).json({'Message': 'Successfully registered'});
+    });
+    return res.status(201).
+        json({'Message': 'Successfully registered', 'User': result});
   } catch (error) {
     console.log(error);
     return res.status(500).json({'Message': error.message});
@@ -53,21 +44,16 @@ const login = async (req, res) => {
     return res.status(400).
         json({'Message': 'Username and Password are both required'});
   }
-  const currentUser = data.users.find(user => user.username === username);
+  const currentUser = await User.findOne({username: username});
   if (currentUser) {
     const match = await comparePassword(password, currentUser.password);
     if (match) {
       const accessToken = generateAccessToken(currentUser);
       const refreshToken = generateRefreshToken(currentUser);
 
-      //Save refresh token of current user to the DB
-      const otherUsers = data.users.filter(
-          person => person.username !== currentUser.username);
-      data.setUsers([...otherUsers, {...currentUser, refreshToken}]);
-      await fsPromises.writeFile(
-          path.join(__dirname, '..', 'model', 'users.json'),
-          JSON.stringify(data.users),
-      );
+      currentUser.refreshToken = refreshToken;
+      await currentUser.save();
+
       res.cookie('refreshToken', refreshToken, {
         httpOnly: true,
         sameSite: 'None',
@@ -92,21 +78,16 @@ const logout = async (req, res) => {
   if (!req.cookies.refreshToken) return res.sendStatus(204);
 
   //Check if refresh token exists in the DB
-  const currentUser = data.users.find(
-      user => user.refreshToken === req.cookies.refreshToken);
+  const currentUser = await User.findOne(
+      {refreshToken: req.cookies.refreshToken});
   if (!currentUser) {
     res.clearCookie('refreshToken');
     return res.sendStatus(204);
   }
 
   //Delete token from user in the DB
-  const otherUsers = data.users.filter(
-      person => person.refreshToken !== currentUser.refreshToken);
-  data.setUsers([...otherUsers, {...currentUser, refreshToken: ''}]);
-  await fsPromises.writeFile(
-      path.join(__dirname, '..', 'model', 'users.json'),
-      JSON.stringify(data.users),
-  );
+  currentUser.refreshToken = null;
+  await currentUser.save();
 
   //Clear cookie
   res.clearCookie('refreshToken');
@@ -120,8 +101,7 @@ const refreshToken = async (req, res) => {
   }
 
   //Check if there's a user with the refresh token
-  const currentUser = data.users.find(
-      user => user.refreshToken === refreshToken);
+  const currentUser = await User.findOne({refreshToken});
   if (!currentUser) return res.sendStatus(403);
 
   jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET, (err, decoded) => {
