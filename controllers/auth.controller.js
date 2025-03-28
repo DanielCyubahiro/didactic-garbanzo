@@ -1,5 +1,5 @@
 const data = {
-  users: require('../models/users.json'),
+  users: require('../model/users.json'),
   setUsers: function(data) {this.users = data;},
 };
 
@@ -12,9 +12,10 @@ const {
   generateRefreshToken,
 } = require('../services/auth.services');
 const jwt = require('jsonwebtoken');
+const ROLES = require('../config/roles');
 
 const register = async (req, res) => {
-  const {username, password} = req.body;
+  const {username, password, roles} = req.body;
   if (!username || !password) {
     return res.status(400).
         json({'Message': 'Username and Password are both required'});
@@ -30,11 +31,14 @@ const register = async (req, res) => {
   try {
     const hashedPassword = await hashPassword(password);
     const newUser = {
-      id: Date.now().toString(), username: username, password: hashedPassword,
+      id: Date.now().toString(),
+      username: username,
+      password: hashedPassword,
+      roles: {...roles, 'User': ROLES.User},
     };
     data.setUsers([...data.users, newUser]);
     await fsPromises.writeFile(
-        path.join(__dirname, '..', 'models', 'users.json'),
+        path.join(__dirname, '..', 'model', 'users.json'),
         JSON.stringify(data.users));
     return res.status(201).json({'Message': 'Successfully registered'});
   } catch (error) {
@@ -61,7 +65,7 @@ const login = async (req, res) => {
           person => person.username !== currentUser.username);
       data.setUsers([...otherUsers, {...currentUser, refreshToken}]);
       await fsPromises.writeFile(
-          path.join(__dirname, '..', 'models', 'users.json'),
+          path.join(__dirname, '..', 'model', 'users.json'),
           JSON.stringify(data.users),
       );
       res.cookie('refreshToken', refreshToken, {
@@ -100,7 +104,7 @@ const logout = async (req, res) => {
       person => person.refreshToken !== currentUser.refreshToken);
   data.setUsers([...otherUsers, {...currentUser, refreshToken: ''}]);
   await fsPromises.writeFile(
-      path.join(__dirname, '..', 'models', 'users.json'),
+      path.join(__dirname, '..', 'model', 'users.json'),
       JSON.stringify(data.users),
   );
 
