@@ -4,6 +4,7 @@ const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 require('dotenv').config();
 
+
 const routes = require('./routes/index');
 const requestLogger = require('./config/logger');
 const verifyJWT = require('./middlewares/auth.middleware');
