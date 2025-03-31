@@ -1,7 +1,3 @@
-const data = {
-  employees: require('../models/employees.json'),
-  setEmployees: function(data) {this.employees = data;},
-};
 const Employee = require('../models/employee.model');
 const ApiResponse = require('../utils/response.util');
 const ApiError = require('../utils/error.util');
