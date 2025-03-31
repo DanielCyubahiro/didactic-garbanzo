@@ -1,72 +1,86 @@
 const data = {
-  employees: require('../model/employees.json'),
+  employees: require('../models/employees.json'),
   setEmployees: function(data) {this.employees = data;},
 };
+const Employee = require('../models/employee.model');
+const ApiResponse = require('../utils/response.util');
+const ApiError = require('../utils/error.util');
 
-const getEmployees = (req, res) => {
-  return res.status(200).json(data.employees);
-};
-
-const createEmployee = (req, res) => {
-  //Validate data
-  if (!req.body.name || !req.body.email) {
-    return res.status(400).json({'message': 'Name and Email are required'});
+const getEmployees = async (req, res, next) => {
+  try {
+    const employees = await Employee.find();
+    if (!employees) return res.sendStatus(204);
+    return res.status(200).json(new ApiResponse(
+        200,
+        employees,
+        'Employees retrieved successfully'));
+  } catch (error) {
+    next(error);
   }
-
-  //Create employee
-  const newEmployee = {
-    id: data.employees[data.employees.length - 1].id + 1 || 1,
-    name: req.body.name,
-    username: req.body?.employeename,
-    email: req.body.email,
-    address: req.body?.address,
-    phone: req.body?.phone,
-    website: req.body?.website,
-  };
-
-  //Add new employee
-  data.setEmployees([...data.employees, newEmployee]);
-
-  return res.status(201).json(data.employees);
 };
 
-const updateEmployee = (req, res) => {
-  //Get employee to update
-  const employee = data.employees.find(employee => employee.id === parseInt(req.params.id));
-  if (!employee) {
-    return res.status(400).json({'message': 'Employee not found'});
+const getEmployee = async (req, res, next) => {
+  try {
+    const employee = await Employee.findById(req.params.id);
+    if (!employee) return next(new ApiError(404, 'Employee not found'));
+    return res.status(200).
+        json(new ApiResponse(
+            200,
+            employee,
+            'Employee retrieved successfully'));
+  } catch (error) {
+    next(error);
   }
-  //Update employee data
-  if (req.body.name) employee.name = req.body.name;
-  if (req.body.email) employee.email = req.body.email;
-  if (req.body.employeename) employee.employeename = req.body.employeename;
-  if (req.body.phone) employee.phone = req.body.phone;
-
-  //Update list of employees
-  const filteredEmployees = data.employees.filter(
-      employee => employee.id !== parseInt(req.params.id));
-  data.setEmployees([filteredEmployees, employee]);
-  return res.status(200).json(data.employees);
 };
 
-const deleteEmployee = (req, res) => {
-  //Get employee to delete
-  const employee = data.employees.find(employee => employee.id === parseInt(req.params.id));
-  if (!employee) {
-    return res.status(400).json({'message': 'Employee not found'});
+const createEmployee = async (req, res, next) => {
+  try {
+    const newEmployee = await Employee.create(req.body);
+    return res.status(201).json(new ApiResponse(
+        201,
+        newEmployee,
+        'Employee created'));
+  } catch (error) {
+    return next(error);
   }
-
-  //Delete employee
-  data.setEmployees(data.employees.filter(employee => employee.id !== employee.id));
-  return res.sendStatus(204);
 };
 
-const getEmployeeById = (req, res) => {
-  const employee = data.employees.find(employee => employee.id === parseInt(req.params.id));
-  if (!employee) {
-    return res.status(400).json({'message': 'Employee not found'});
+const updateEmployee = async (req, res, next) => {
+  try {
+    let employee = await Employee.findById(req.params.id);
+    if (!employee) return next(new ApiError(404, 'Employee not found'));
+
+    employee = await Employee.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+      runValidators: true,
+    });
+    return res.status(200).json(new ApiResponse(
+        200,
+        employee,
+        'Employee updated successfully'));
+  } catch (error) {
+    next(error);
   }
-  return res.status(200).json(employee);
 };
 
-module.exports = {getEmployees, getEmployeeById, createEmployee, updateEmployee, deleteEmployee};
+const deleteEmployee = async (req, res, next) => {
+  try {
+    const employee = await Employee.findByIdAndDelete(req.params.id);
+    if (!employee) return next(new ApiError(404,'Employee not found'));
+
+    return res.status(200).json(new ApiResponse(
+        200,
+        employee,
+        'Employee deleted successfully'));
+  } catch (error) {
+    next(error);
+  }
+};
+
+module.exports = {
+  getEmployees,
+  getEmployee,
+  createEmployee,
+  updateEmployee,
+  deleteEmployee,
+};
