@@ -4,10 +4,10 @@ const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 require('dotenv').config();
 
-
 const routes = require('./routes/index');
 const requestLogger = require('./config/logger');
 const verifyJWT = require('./middlewares/auth.middleware');
+const {notFound, errorHandler} = require('./middlewares/error.middleware');
 
 const app = express();
 
@@ -26,7 +26,9 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/auth', routes.authRoutes);
 
 //Authenticated routes
-app.use(verifyJWT)
+app.use(verifyJWT);
 app.use('/employees', routes.employeeRoutes);
+app.use(notFound);
 
+app.use(errorHandler);
 module.exports = app;
