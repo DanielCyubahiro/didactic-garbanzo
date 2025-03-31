@@ -9,6 +9,12 @@ const ROLES = require('../config/roles');
 const User = require('../models/user.model');
 const ApiError = require('../utils/error.util');
 
+/**
+ * Register a new user
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ * @param {Function} next - Express next middleware function
+ */
 const register = async (req, res, next) => {
   try {
     const {username, password, roles} = req.body;
@@ -44,6 +50,12 @@ const register = async (req, res, next) => {
   }
 };
 
+/**
+ * Authenticate user and generate tokens
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ * @param {Function} next - Express next middleware function
+ */
 const login = async (req, res, next) => {
   try {
     const {username, password} = req.body;
@@ -102,6 +114,12 @@ const login = async (req, res, next) => {
   }
 };
 
+/**
+ * Logout user and clear tokens
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ * @param {Function} next - Express next middleware function
+ */
 const logout = async (req, res, next) => {
   try {
     // Check cookies
@@ -136,6 +154,12 @@ const logout = async (req, res, next) => {
   }
 };
 
+/**
+ * Refresh access token using refresh token
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ * @param {Function} next - Express next middleware function
+ */
 const refreshToken = async (req, res, next) => {
   try {
     const refreshToken = req.cookies?.refreshToken;
