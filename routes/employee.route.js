@@ -5,17 +5,17 @@ const roles = require('../config/roles');
 const {
   getEmployees,
   createEmployee,
-  getEmployeeById,
+  getEmployee,
   updateEmployee,
   deleteEmployee,
 } = require('../controllers/employees.controller');
 
 router.route('/').
     get(getEmployees).
-    post(verifyRole(roles.Editor), createEmployee);
+    post(verifyRole(roles.Editor, roles.Admin), createEmployee);
 router.route('/:id').
-    get(verifyRole(roles.User), getEmployeeById).
-    put(verifyRole(roles.Editor), updateEmployee).
+    get(verifyRole(roles.User, roles.Admin), getEmployee).
+    put(verifyRole(roles.Editor, roles.Admin), updateEmployee).
     delete(verifyRole(roles.Admin), deleteEmployee);
 
 module.exports = router;
