@@ -18,6 +18,7 @@ const generateAccessToken = (user) => jwt.sign(
 const generateRefreshToken = (user) => jwt.sign(
     {
       id: user.id,
+      username: user.username,
     },
     process.env.JWT_REFRESH_SECRET,
     {
