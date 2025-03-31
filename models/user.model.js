@@ -19,6 +19,7 @@ const userSchema = new Schema({
     Editor: Number,
   },
   refreshToken: String,
+  lastLogin: Date,
 });
 
 module.exports = mongoose.model('User', userSchema);
