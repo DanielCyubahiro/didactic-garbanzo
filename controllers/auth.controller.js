@@ -3,10 +3,10 @@ const {
   comparePassword,
   generateAccessToken,
   generateRefreshToken,
-} = require('../services/auth.services');
+} = require('../services/auth.service');
 const jwt = require('jsonwebtoken');
 const ROLES = require('../config/roles');
-const User = require('../model/user.model');
+const User = require('../models/user.model');
 
 const register = async (req, res) => {
   const {username, password, roles} = req.body;
