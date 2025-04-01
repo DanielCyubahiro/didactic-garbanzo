@@ -7,7 +7,7 @@ const ApiError = require('../utils/error.util');
  * @param {Response} res - Express response object
  * @description Handles all errors thrown in the application and sends appropriate responses
  */
-const errorHandler = (err, req, res) => {
+const errorHandler = (err, req, res, next) => {
   let error = err;
 
   // Handle Mongoose CastError (invalid ObjectId format)
@@ -40,12 +40,12 @@ const errorHandler = (err, req, res) => {
   }
 
   // Handle Joi validation errors
-  if (err?.error?.isJoi) {
-    const messages = err.error.details.map(detail => ({
-      field: detail.path.join('.'),
-      message: detail.message.replace(/['"]/g, '')
-    }));
-    error = new ApiError(400, 'Validation failed', messages);
+  if (err && err.error && err.error.isJoi) {
+    const errorMessages = err.error.details.map(detail => detail.message);
+    return res.status(400).json({
+      error: 'Validation Error',
+      messages: errorMessages
+    });
   }
 
   /**
