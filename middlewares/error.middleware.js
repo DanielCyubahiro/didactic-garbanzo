@@ -5,6 +5,7 @@ const ApiError = require('../utils/error.util');
  * @param {Error} err - The error object
  * @param {Request} req - Express request object
  * @param {Response} res - Express response object
+ * @param next
  * @description Handles all errors thrown in the application and sends appropriate responses
  */
 const errorHandler = (err, req, res, next) => {
