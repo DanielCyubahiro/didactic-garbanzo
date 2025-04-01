@@ -39,6 +39,15 @@ const errorHandler = (err, req, res) => {
     error = new ApiError(401, 'Token expired');
   }
 
+  // Handle Joi validation errors
+  if (err?.error?.isJoi) {
+    const messages = err.error.details.map(detail => ({
+      field: detail.path.join('.'),
+      message: detail.message.replace(/['"]/g, '')
+    }));
+    error = new ApiError(400, 'Validation failed', messages);
+  }
+
   /**
    * Send error response to client
    * - In production: Only sends error message
